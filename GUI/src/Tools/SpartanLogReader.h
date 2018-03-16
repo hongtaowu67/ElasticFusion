@@ -46,6 +46,10 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
 
+#include "yaml-cpp/yaml.h"
+#include <fstream>
+//#include "yaml-cpp/node/parse.h"
+
 struct SpartanLogData{
     std::string ros_bag_filename;
     std::string image_depth_topic;

@@ -123,6 +123,10 @@ inline bool image_exists (const std::string& name) {
 void SpartanLogReader::getCore()
 {
 
+    std::string config_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/pose_data.yaml";
+    YAML::Node config_yaml = YAML::LoadFile(config_filename);
+    std::cout << config_yaml[0]["camera_to_world"] << std::endl;
+
     std::cout << "current frame " << currentFrame << std::endl;
     std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
 

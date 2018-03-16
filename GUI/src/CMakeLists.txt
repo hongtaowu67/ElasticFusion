@@ -34,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   rosbag
 )
+find_package(Yaml-cpp REQUIRED)
 
 if(WIN32)
   find_package(RealSense QUIET)
@@ -56,6 +57,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+include_directories(${YAML_CPP_SOURCE_DIR}/test)
 
 if(WITH_REALSENSE)
   include_directories(${REALSENSE_INCLUDE_DIR})
@@ -104,6 +106,7 @@ target_link_libraries(ElasticFusion
                       ${LAPACK_LIBRARIES}
                       ${catkin_LIBRARIES}
                       ${OpenCV_LIBS}
+                      yaml-cpp
 )
 
 
