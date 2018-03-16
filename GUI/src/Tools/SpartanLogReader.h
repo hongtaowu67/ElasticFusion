@@ -35,6 +35,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+//#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 #include <ros/ros.h>
 #include <rosbag/bag.h>

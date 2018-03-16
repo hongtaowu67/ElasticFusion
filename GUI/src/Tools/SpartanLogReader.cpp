@@ -218,6 +218,7 @@ void SpartanLogReader::getCore()
                 }
             }
         }
+
         img.write("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgbnew.png");
     }  // end namespace png
 
@@ -251,8 +252,9 @@ void SpartanLogReader::getCore()
     // RGB
     if (imageSize == numPixels * 3)
     {
-
-        memcpy(&decompressionBufferImage[0], &(log_rgbd_data.images_rgb.at(currentFrame)->data[0]), numPixels * 3);
+        cv::Mat cv_rgb;
+        cv_rgb = cv::imread("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png", cv::IMREAD_COLOR);
+        memcpy(&decompressionBufferImage[0], cv_rgb.ptr(), numPixels * 3);
     } else {
         std::cout << "Am not expecting compressed images in ROSBagReader.cpp" << std::endl;
         exit(0);
