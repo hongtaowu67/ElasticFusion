@@ -101,6 +101,7 @@ class SpartanLogReader : public LogReader
     private:
         void getCore();
         SpartanRgbdData log_rgbd_data;
+        YAML::Node config_yaml;
 };
 
 #endif /* SPARTANLOGREADER_H_ */
