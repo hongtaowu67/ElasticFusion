@@ -35,14 +35,14 @@ MainController::MainController(int argc, char * argv[])
     Parse::get().arg(argc, argv, "-cal", calibrationFile);
     Parse::get().arg(argc, argv, "-l", logFile);
 
-    if (isRosBag(logFile)) 
+    if (isSpartanLog(logFile)) 
     {
 
         std::cout << "Loading camera info and calibration from ROS bag" << std::endl;
         int pixels_width, pixels_height;
         double fx, fy, cx, cy;
 
-        ROSLogData ros_log_data;
+        SpartanLogData ros_log_data;
         Parse::get().arg(argc, argv, "--ros_bag_filename", ros_log_data.ros_bag_filename);
         Parse::get().arg(argc, argv, "--ros_image_depth_topic", ros_log_data.image_depth_topic);
         Parse::get().arg(argc, argv, "--ros_image_rgb_topic", ros_log_data.image_rgb_topic);
@@ -52,10 +52,10 @@ MainController::MainController(int argc, char * argv[])
 
 
 
-        rosGetParams(ros_log_data, pixels_width, pixels_height, fx, fy, cx, cy);
+        spartanGetParams(ros_log_data, pixels_width, pixels_height, fx, fy, cx, cy);
         Resolution::getInstance(pixels_width, pixels_height);
         Intrinsics::getInstance(fx, fy, cx, cy);
-        logReader = new ROSBagReader(ros_log_data, Parse::get().arg(argc, argv, "-f", empty) > -1);
+        logReader = new SpartanLogReader(ros_log_data, Parse::get().arg(argc, argv, "-f", empty) > -1);
     } 
     else 
     {
