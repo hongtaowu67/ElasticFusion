@@ -57,96 +57,18 @@ void spartanGetParams(const SpartanLogData & log_data, int& pixels_width, int& p
     exit(0);
 }
 
-void loadBag(const SpartanLogData & log_data, SpartanRgbdData& log_rgbd_data)
-{
-  rosbag::Bag bag;
-  bag.open(log_data.ros_bag_filename, rosbag::bagmode::Read);
-
-  // Pete ToDo: provice CLI for setting topic names
-  // std::string image_d_topic = "/camera_carmine_1/depth_registered/sw_registered/image_rect";
-  // std::string image_rgb_topic = "/camera_carmine_1/rgb/image_rect_color";
-  // std::string cam_info_topic = "/camera_carmine_1/rgb/camera_info";
-  
-  std::string image_d_topic = log_data.image_depth_topic;
-  std::string image_rgb_topic = log_data.image_rgb_topic;
-  std::string cam_info_topic = log_data.cam_info_topic;
-
-  std::vector<std::string> topics;
-  topics.push_back(image_d_topic);
-  topics.push_back(image_rgb_topic);
-  topics.push_back(cam_info_topic);
-  
-  rosbag::View view(bag, rosbag::TopicQuery(topics));
-  
-  BOOST_FOREACH(rosbag::MessageInstance const m, view)
-  {
-    if (m.getTopic() == image_d_topic || ("/" + m.getTopic() == image_d_topic))
-    {
-      sensor_msgs::Image::ConstPtr l_img = m.instantiate<sensor_msgs::Image>();
-      if (l_img != NULL) {
-        log_rgbd_data.images_d.push_back(l_img);
-      }
-    }
-    
-    if (m.getTopic() == image_rgb_topic || ("/" + m.getTopic() == image_rgb_topic))
-    {
-      sensor_msgs::Image::ConstPtr r_img = m.instantiate<sensor_msgs::Image>();
-      if (r_img != NULL) {
-        log_rgbd_data.images_rgb.push_back(r_img);
-      }
-    }
-    
-    if (m.getTopic() == cam_info_topic || ("/" + m.getTopic() == cam_info_topic))
-    {
-      sensor_msgs::CameraInfo::ConstPtr r_info = m.instantiate<sensor_msgs::CameraInfo>();
-      if (r_info != NULL) {
-        log_rgbd_data.cam_info = r_info;
-      }
-    }
-  }
-  bag.close();
-  std::cout << "rgb data size " << log_rgbd_data.images_rgb.size() << std::endl;
-  std::cout << "d data size " << log_rgbd_data.images_d.size() << std::endl;
-
-  unsigned int size_rgb = log_rgbd_data.images_rgb.size();
-  unsigned int size_d = log_rgbd_data.images_d.size();
-  while(size_rgb != size_d) {
-    if(size_rgb > size_d) {
-      log_rgbd_data.images_rgb.pop_back();
-      size_rgb -= 1;
-    }
-    else {
-      log_rgbd_data.images_d.pop_back();
-      size_d -= 1;
-    }
-  }
-
-  std::cout << "After remove redundant records:" << std::endl;
-  std::cout << "rgb data size " << log_rgbd_data.images_rgb.size() << std::endl;
-  std::cout << "d data size " << log_rgbd_data.images_d.size() << std::endl;
-}
-
-
 SpartanLogReader::SpartanLogReader(const SpartanLogData & log_data, bool flipColors)
  : LogReader(log_data.ros_bag_filename, flipColors)
 {
     assert(pangolin::FileExists(log_data.ros_bag_filename.c_str()));
-    
-    // Load in all of the ros bag into an ROSRgbdData strcut
-    loadBag(log_data, log_rgbd_data);
 
     // not sure why we need to do this . . . 
     fp = fopen(log_data.ros_bag_filename.c_str(), "rb");
 
     currentFrame = 0;
 
-    // Pete ToDo: need to implement time sync
-    // if (log_rgbd_data.images_rgb.size() != log_rgbd_data.images_d.size()) {
-    //   std::cout << "Need to implement time sync!" << std::endl;
-    //   exit(0);
-    // }
-
-    numFrames = log_rgbd_data.images_rgb.size();
+    // Need to set this later
+    numFrames = 741;
 
     depthReadBuffer = new unsigned char[numPixels * 2];
     imageReadBuffer = new unsigned char[numPixels * 3];
@@ -191,63 +113,42 @@ std::string ZeroPadNumber(int num)
     return ret;
 }
 
+#include <sys/stat.h>
+// from https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
+inline bool image_exists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 void SpartanLogReader::getCore()
 {
 
-    std::cout << "In SpartanLogReader getCore" << std::endl;
     std::cout << "current frame " << currentFrame << std::endl;
     std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
 
-    if (currentFrame < 4)
-    {
-        using namespace png; 
-
-        //Constructor with one string parameter: open a png file
-        image<rgb_pixel> img("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png");
-
-        for(int i=0;i<img.get_width();i++)
-        {
-            for(int j=0;j<img.get_height();j++)
-            {
-                rgb_pixel pixel=img.get_pixel(i,j);
-                //Replace blue pixels with yellow pixels
-                if(pixel.blue>0)
-                {
-                    rgb_pixel newPixel(pixel.blue,pixel.blue,0);
-                    img.set_pixel(i,j,newPixel);
-                }
-            }
-        }
-
-        img.write("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgbnew.png");
-    }  // end namespace png
-
-    timestamp = log_rgbd_data.images_rgb.at(currentFrame)->header.stamp.toNSec();
-    depthSize = log_rgbd_data.images_d.at(currentFrame)->step * log_rgbd_data.images_d.at(currentFrame)->height;
-    imageSize = log_rgbd_data.images_rgb.at(currentFrame)->step * log_rgbd_data.images_rgb.at(currentFrame)->height;
-
     // Depth 
-    if ((depthSize == numPixels * 4) && (log_rgbd_data.images_d.at(currentFrame)->encoding == "32FC1")) 
+    std::string depth_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
+    if (image_exists(depth_filename))
     {
         cv::Mat cv_depth;
-        cv_depth = cv::imread("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png", CV_16UC1);
+        cv_depth = cv::imread(depth_filename, CV_16UC1);
         memcpy(&decompressionBufferDepth[0], cv_depth.ptr(), numPixels * 2);
     }
     else
     {
-        std::cout << "Am expecting 32FC1 encoded depth image in ROSBagReader.cpp" << std::endl;
+        std::cout << "This filename didn't exist " << depth_filename << std::endl;
         exit(0);
     }
 
-
     // RGB
-    if (imageSize == numPixels * 3)
+    std::string rgb_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png";
+    if (image_exists(rgb_filename))
     {
         cv::Mat cv_rgb;
-        cv_rgb = cv::imread("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png", cv::IMREAD_COLOR);
+        cv_rgb = cv::imread(rgb_filename, cv::IMREAD_COLOR);
         memcpy(&decompressionBufferImage[0], cv_rgb.ptr(), numPixels * 3);
     } else {
-        std::cout << "Am not expecting compressed images in ROSBagReader.cpp" << std::endl;
+        std::cout << "This filename didn't exist " << rgb_filename << std::endl;
         exit(0);
     }
 
