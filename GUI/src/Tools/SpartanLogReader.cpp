@@ -229,18 +229,9 @@ void SpartanLogReader::getCore()
     // Depth 
     if ((depthSize == numPixels * 4) && (log_rgbd_data.images_d.at(currentFrame)->encoding == "32FC1")) 
     {
-        // Encoding expected to be in ROS's standard CV_32FC1 format (4 byte float per pixel)
-        // This convert to CV_16UC1 format, as expected by ElasticFusion
-        sensor_msgs::Image::ConstPtr depth = log_rgbd_data.images_d.at(currentFrame);
-        cv::Mat cv_depth = cv::Mat(depth->height, depth->width, CV_32FC1); 
-        for (size_t i = 0; i < depth->height; i++) {
-            for (size_t j = 0; j < depth->width; j++) {
-                cv_depth.at<float>(i,j) = *( (float*) &(depth->data[0]) + (i*depth->width + j) );
-            }
-        }
-        cv::Mat cv_depth_out = cv::Mat(depth->height, depth->width, CV_16UC1);
-        cv_depth.convertTo(cv_depth_out, CV_16UC1, 1000);
-        memcpy(&decompressionBufferDepth[0], cv_depth_out.ptr(), numPixels * 2);
+        cv::Mat cv_depth;
+        cv_depth = cv::imread("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png", CV_16UC1);
+        memcpy(&decompressionBufferDepth[0], cv_depth.ptr(), numPixels * 2);
     }
     else
     {
