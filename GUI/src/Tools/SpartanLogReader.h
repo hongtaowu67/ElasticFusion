@@ -40,6 +40,8 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 
+#include "png++/png++/png.hpp"
+
 #include <boost/foreach.hpp>
 
 #include <sensor_msgs/Image.h>

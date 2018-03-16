@@ -177,6 +177,33 @@ void SpartanLogReader::getNext()
 
 void SpartanLogReader::getCore()
 {
+
+    std::cout << "In SpartanLogReader getCore" << std::endl;
+    std::cout << "current frame " << currentFrame << std::endl;
+    
+    if (currentFrame < 2)
+    {
+        using namespace png; 
+
+        //Constructor with one string parameter: open a png file
+        image<rgb_pixel> img("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/000000_rgb.png");
+
+        for(int i=0;i<img.get_width();i++)
+        {
+            for(int j=0;j<img.get_height();j++)
+            {
+                rgb_pixel pixel=img.get_pixel(i,j);
+                //Replace blue pixels with yellow pixels
+                if(pixel.blue>0)
+                {
+                    rgb_pixel newPixel(pixel.blue,pixel.blue,0);
+                    img.set_pixel(i,j,newPixel);
+                }
+            }
+        }
+        img.write("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/000000_rgbnew.png");
+    }  // end namespace png
+
     timestamp = log_rgbd_data.images_rgb.at(currentFrame)->header.stamp.toNSec();
     depthSize = log_rgbd_data.images_d.at(currentFrame)->step * log_rgbd_data.images_d.at(currentFrame)->height;
     imageSize = log_rgbd_data.images_rgb.at(currentFrame)->step * log_rgbd_data.images_rgb.at(currentFrame)->height;
@@ -207,6 +234,7 @@ void SpartanLogReader::getCore()
     // RGB
     if (imageSize == numPixels * 3)
     {
+
         memcpy(&decompressionBufferImage[0], &(log_rgbd_data.images_rgb.at(currentFrame)->data[0]), numPixels * 3);
     } else {
         std::cout << "Am not expecting compressed images in ROSBagReader.cpp" << std::endl;

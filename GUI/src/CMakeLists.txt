@@ -34,6 +34,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   rosbag
 )
+find_package(PNG REQUIRED)
+
 
 if(WIN32)
   find_package(RealSense QUIET)
@@ -56,6 +58,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+include_directories(${PNG_INCLUDE_DIR})
 
 if(WITH_REALSENSE)
   include_directories(${REALSENSE_INCLUDE_DIR})
@@ -104,6 +107,7 @@ target_link_libraries(ElasticFusion
                       ${LAPACK_LIBRARIES}
                       ${catkin_LIBRARIES}
                       ${OpenCV_LIBS}
+                      ${PNG_LIBRARY}
 )
 
 
