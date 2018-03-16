@@ -175,18 +175,35 @@ void SpartanLogReader::getNext()
     getCore();
 }
 
+std::string ZeroPadNumber(int num)
+{
+    std::stringstream ss;
+    
+    // the number is converted to string with the help of stringstream
+    ss << num; 
+    std::string ret;
+    ss >> ret;
+    
+    // Append zero chars
+    int str_length = ret.length();
+    for (int i = 0; i < 6 - str_length; i++)
+        ret = "0" + ret;
+    return ret;
+}
+
 void SpartanLogReader::getCore()
 {
 
     std::cout << "In SpartanLogReader getCore" << std::endl;
     std::cout << "current frame " << currentFrame << std::endl;
-    
-    if (currentFrame < 2)
+    std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
+
+    if (currentFrame < 4)
     {
         using namespace png; 
 
         //Constructor with one string parameter: open a png file
-        image<rgb_pixel> img("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/000000_rgb.png");
+        image<rgb_pixel> img("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png");
 
         for(int i=0;i<img.get_width();i++)
         {
@@ -201,7 +218,7 @@ void SpartanLogReader::getCore()
                 }
             }
         }
-        img.write("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/000000_rgbnew.png");
+        img.write("/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgbnew.png");
     }  // end namespace png
 
     timestamp = log_rgbd_data.images_rgb.at(currentFrame)->header.stamp.toNSec();
