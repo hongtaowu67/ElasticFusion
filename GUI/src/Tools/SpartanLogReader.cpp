@@ -60,9 +60,7 @@ SpartanLogReader::SpartanLogReader(const std::string & log_folder, bool flipColo
     config_yaml = YAML::LoadFile(config_filename);
 
     currentFrame = 0;
-
-    // Need to set this later
-    numFrames = 741;
+    numFrames = config_yaml.size();
 
     depthReadBuffer = new unsigned char[numPixels * 2];
     imageReadBuffer = new unsigned char[numPixels * 3];
@@ -110,10 +108,9 @@ std::string ZeroPadNumber(int num)
 void SpartanLogReader::getCore()
 {
 
-    std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
-
     std::cout << "current frame " << currentFrame << std::endl;
     std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
+    std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
 
     // Depth 
     std::string depth_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
@@ -167,7 +164,7 @@ int SpartanLogReader::getNumFrames()
 
 bool SpartanLogReader::hasMore()
 {
-    return currentFrame + 1 < numFrames;
+    return currentFrame + 1 <= numFrames;
 }
 
 
