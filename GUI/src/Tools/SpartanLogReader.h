@@ -50,31 +50,14 @@
 #include <fstream>
 //#include "yaml-cpp/node/parse.h"
 
-struct SpartanLogData{
-    std::string ros_bag_filename;
-    std::string image_depth_topic;
-    std::string image_rgb_topic;
-    std::string cam_info_topic;
-};
-
 // Helper functions to enable loading of calibration params before creating a LogReader instance
 bool isSpartanLog(std::string const& value);
-void spartanGetParams(const SpartanLogData & log_data , int& pixels_width, int& pixels_height, double& fx, double& fy, double& cx, double& cy);
-
-
-// Struct to store rgbd data
-class SpartanRgbdData
-{
-public:
-  std::vector<sensor_msgs::Image::ConstPtr> images_rgb;
-  std::vector<sensor_msgs::Image::ConstPtr> images_d;
-  sensor_msgs::CameraInfo::ConstPtr cam_info;       // Note: assumes depth-rgb has already been registered 
-};
+void spartanGetParams(const std::string camera_info_filename, int& pixels_width, int& pixels_height, double& fx, double& fy, double& cx, double& cy);
 
 class SpartanLogReader : public LogReader
 {
     public:
-        SpartanLogReader(const SpartanLogData & log_data, bool flipColors);
+        SpartanLogReader(const std::string & log_folder, bool flipColors);
 
         virtual ~SpartanLogReader();
 
@@ -100,7 +83,6 @@ class SpartanLogReader : public LogReader
 
     private:
         void getCore();
-        SpartanRgbdData log_rgbd_data;
         YAML::Node config_yaml;
 };
 

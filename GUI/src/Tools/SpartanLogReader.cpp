@@ -18,54 +18,45 @@
 
 #include "SpartanLogReader.h"
 
+#include <sys/stat.h>
+// from https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
+inline bool file_exists (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 bool isSpartanLog(std::string const& value)
 {
-    std::string ending = ".bag";
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-}
-
-void spartanGetParams(const SpartanLogData & log_data, int& pixels_width, int& pixels_height, double& fx, double& fy, double& cx, double& cy) {
-    rosbag::Bag bag;
-    
-    bag.open(log_data.ros_bag_filename, rosbag::bagmode::Read);
-    
-    // Pete ToDo: provide CLI for setting topic names (done by manuelli!)
-    std::string cam_info_topic = log_data.cam_info_topic;
-    
-    std::vector<std::string> topics;
-    topics.push_back(cam_info_topic);
-    rosbag::View view(bag, rosbag::TopicQuery(topics));
-
-    BOOST_FOREACH(rosbag::MessageInstance const m, view)
-    { 
-        if (m.getTopic() == cam_info_topic || ("/" + m.getTopic() == cam_info_topic)) {
-            sensor_msgs::CameraInfo::ConstPtr cam_info = m.instantiate<sensor_msgs::CameraInfo>();
-            if (cam_info != NULL) {
-                pixels_width = cam_info->width;
-                pixels_height = cam_info->height;
-                fx = cam_info->K[0];
-                fy = cam_info->K[4];
-                cx = cam_info->K[2];
-                cy = cam_info->K[5];
-                bag.close();
-                return;
-            }
-        }
+    if (file_exists(value+"/images/pose_data.yaml")) {
+        return true;
     }
-    std::cout << "Did not find camera info!" << std::endl;
-    exit(0);
+    else {
+        return false;
+    }
 }
 
-SpartanLogReader::SpartanLogReader(const SpartanLogData & log_data, bool flipColors)
- : LogReader(log_data.ros_bag_filename, flipColors)
+void spartanGetParams(const std::string camera_info_filename, int& pixels_width, int& pixels_height, double& fx, double& fy, double& cx, double& cy) {
+    YAML::Node camera_info_yaml = YAML::LoadFile(camera_info_filename);
+    
+    pixels_width = camera_info_yaml["image_width"].as<int>();
+    pixels_height = camera_info_yaml["image_height"].as<int>();
+    fx = camera_info_yaml["camera_matrix"]["data"][0].as<double>();
+    fy = camera_info_yaml["camera_matrix"]["data"][4].as<double>();
+    cx = camera_info_yaml["camera_matrix"]["data"][2].as<double>();
+    cy = camera_info_yaml["camera_matrix"]["data"][5].as<double>();
+
+    std::cout << "Loaded these params:" << std::endl;
+    std::cout << "pixels_width, pixels_height: "<< pixels_width << ", " << pixels_height << std::endl;
+    std::cout << "fx, fy, cx, cy: " << fx << " " << fy << " " << cx << " " << cy << std::endl;
+}
+
+SpartanLogReader::SpartanLogReader(const std::string & log_folder, bool flipColors)
+ : LogReader(log_folder, flipColors)
 {
-    assert(pangolin::FileExists(log_data.ros_bag_filename.c_str()));
-
-    // not sure why we need to do this . . . 
-    fp = fopen(log_data.ros_bag_filename.c_str(), "rb");
-
-    std::string config_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/pose_data.yaml";
+    
+    std::string config_filename = log_folder + "/images/pose_data.yaml";
+    assert(pangolin::FileExists(config_filename.c_str()));
+    fp = fopen(config_filename.c_str(), "rb");      // not sure why we need to do this . . . 
     config_yaml = YAML::LoadFile(config_filename);
 
     currentFrame = 0;
@@ -116,13 +107,6 @@ std::string ZeroPadNumber(int num)
     return ret;
 }
 
-#include <sys/stat.h>
-// from https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
-inline bool image_exists (const std::string& name) {
-  struct stat buffer;   
-  return (stat (name.c_str(), &buffer) == 0); 
-}
-
 void SpartanLogReader::getCore()
 {
 
@@ -133,7 +117,7 @@ void SpartanLogReader::getCore()
 
     // Depth 
     std::string depth_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
-    if (image_exists(depth_filename))
+    if (file_exists(depth_filename))
     {
         cv::Mat cv_depth;
         cv_depth = cv::imread(depth_filename, CV_16UC1);
@@ -147,7 +131,7 @@ void SpartanLogReader::getCore()
 
     // RGB
     std::string rgb_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png";
-    if (image_exists(rgb_filename))
+    if (file_exists(rgb_filename))
     {
         cv::Mat cv_rgb;
         cv_rgb = cv::imread(rgb_filename, cv::IMREAD_COLOR);
