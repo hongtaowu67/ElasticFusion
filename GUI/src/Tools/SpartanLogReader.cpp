@@ -113,7 +113,7 @@ void SpartanLogReader::getCore()
     std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
 
     // Depth 
-    std::string depth_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
+    std::string depth_filename = file+"/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
     if (file_exists(depth_filename))
     {
         cv::Mat cv_depth;
@@ -127,7 +127,7 @@ void SpartanLogReader::getCore()
     }
 
     // RGB
-    std::string rgb_filename = "/home/peteflo/spartan/sandbox/fusion/fusion_1521222309.47/images/"+ZeroPadNumber(currentFrame)+"_rgb.png";
+    std::string rgb_filename = file+"/images/"+ZeroPadNumber(currentFrame)+"_rgb.png";
     if (file_exists(rgb_filename))
     {
         cv::Mat cv_rgb;
@@ -154,7 +154,7 @@ void SpartanLogReader::getCore()
 
 void SpartanLogReader::fastForward(int frame)
 {
-  std::cout << "ROSBagReader::fastForward not implemented" << std::endl;
+  std::cout << "SpartanLogReader::fastForward not implemented" << std::endl;
 }
 
 int SpartanLogReader::getNumFrames()
