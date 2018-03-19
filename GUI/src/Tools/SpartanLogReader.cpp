@@ -27,7 +27,7 @@ inline bool file_exists (const std::string& name) {
 
 bool isSpartanLog(std::string const& value)
 {
-    if (file_exists(value+"/images/pose_data.yaml")) {
+    if (file_exists(value+"/pose_data.yaml")) {
         return true;
     }
     else {
@@ -54,7 +54,7 @@ SpartanLogReader::SpartanLogReader(const std::string & log_folder, bool flipColo
  : LogReader(log_folder, flipColors)
 {
     
-    std::string config_filename = log_folder + "/images/pose_data.yaml";
+    std::string config_filename = log_folder + "/pose_data.yaml";
     assert(pangolin::FileExists(config_filename.c_str()));
     fp = fopen(config_filename.c_str(), "rb");      // not sure why we need to do this . . . 
     config_yaml = YAML::LoadFile(config_filename);
@@ -113,7 +113,7 @@ void SpartanLogReader::getCore()
     std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
 
     // Depth 
-    std::string depth_filename = file+"/images/"+ZeroPadNumber(currentFrame)+"_depth.png";
+    std::string depth_filename = file+"/"+ZeroPadNumber(currentFrame)+"_depth.png";
     if (file_exists(depth_filename))
     {
         cv::Mat cv_depth;
@@ -127,7 +127,7 @@ void SpartanLogReader::getCore()
     }
 
     // RGB
-    std::string rgb_filename = file+"/images/"+ZeroPadNumber(currentFrame)+"_rgb.png";
+    std::string rgb_filename = file+"/"+ZeroPadNumber(currentFrame)+"_rgb.png";
     if (file_exists(rgb_filename))
     {
         cv::Mat cv_rgb;

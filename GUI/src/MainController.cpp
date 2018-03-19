@@ -40,7 +40,7 @@ MainController::MainController(int argc, char * argv[])
         std::cout << "Loading camera info and calibration from Spartan log" << std::endl;
         int pixels_width, pixels_height;
         double fx, fy, cx, cy;
-        std::string camera_info_filename = logFile+"/images/camera_info.yaml";
+        std::string camera_info_filename = logFile+"/camera_info.yaml";
         spartanGetParams(camera_info_filename, pixels_width, pixels_height, fx, fy, cx, cy);
         Resolution::getInstance(pixels_width, pixels_height);
         Intrinsics::getInstance(fx, fy, cx, cy);
