@@ -40,6 +40,7 @@ void spartanGetParams(const std::string camera_info_filename, int& pixels_width,
     
     pixels_width = camera_info_yaml["image_width"].as<int>();
     pixels_height = camera_info_yaml["image_height"].as<int>();
+
     fx = camera_info_yaml["camera_matrix"]["data"][0].as<double>();
     fy = camera_info_yaml["camera_matrix"]["data"][4].as<double>();
     cx = camera_info_yaml["camera_matrix"]["data"][2].as<double>();
@@ -87,6 +88,10 @@ void SpartanLogReader::getBack()
 void SpartanLogReader::getNext()
 {
     getCore();
+}
+
+int SpartanLogReader::getForwardKinematicsPose() {
+    return currentFrame;
 }
 
 std::string ZeroPadNumber(int num)

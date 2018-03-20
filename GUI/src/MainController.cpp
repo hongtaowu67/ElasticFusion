@@ -23,6 +23,7 @@ MainController::MainController(int argc, char * argv[])
    eFusion(0),
    gui(0),
    groundTruthOdometry(0),
+   forwardKinematicsOdometry(0),
    logReader(0),
    framesToSkip(0),
    resetButton(false),
@@ -45,6 +46,7 @@ MainController::MainController(int argc, char * argv[])
         Resolution::getInstance(pixels_width, pixels_height);
         Intrinsics::getInstance(fx, fy, cx, cy);
         logReader = new SpartanLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
+        forwardKinematicsOdometry = new ForwardKinematicsOdometry(logFile+"/pose_data.yaml");
     } 
     else 
     {
@@ -156,6 +158,11 @@ MainController::~MainController()
     if(groundTruthOdometry)
     {
         delete groundTruthOdometry;
+    }
+
+    if(forwardKinematicsOdometry)
+    {
+        delete forwardKinematicsOdometry;
     }
 
     if(logReader)
@@ -286,7 +293,15 @@ void MainController::run()
                     *currentPose = groundTruthOdometry->getTransformation(logReader->timestamp);
                 }
 
-                eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
+                if(forwardKinematicsOdometry)
+                {
+                    currentPose = new Eigen::Matrix4f;
+                    currentPose->setIdentity();
+                    *currentPose = forwardKinematicsOdometry->getTransformation(logReader->timestamp);
+                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier, true);
+                } else {
+                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
+                }
 
                 if(currentPose)
                 {
