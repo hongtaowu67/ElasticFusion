@@ -24,6 +24,7 @@
 #include "Tools/RawLogReader.h"
 #include "Tools/LiveLogReader.h"
 #include "Tools/ROSBagReader.h"
+#include "Tools/SpartanLogReader.h"
 
 #ifndef MAINCONTROLLER_H_
 #define MAINCONTROLLER_H_
