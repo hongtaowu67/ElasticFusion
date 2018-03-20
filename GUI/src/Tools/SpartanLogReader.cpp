@@ -113,9 +113,7 @@ std::string ZeroPadNumber(int num)
 void SpartanLogReader::getCore()
 {
 
-    std::cout << "current frame " << currentFrame << std::endl;
-    std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
-    std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
+    std::cout << "current frame in getCore" << currentFrame << std::endl;
 
     // Depth 
     std::string depth_filename = file+"/"+ZeroPadNumber(currentFrame)+"_depth.png";

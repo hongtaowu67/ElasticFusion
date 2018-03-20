@@ -308,7 +308,7 @@ void ElasticFusion::processFrame(const unsigned char * rgb,
             if(bootstrap)
             {
                 assert(inPose);
-                currPose = inPose; // note: this has changed bootsrap to give global frame guesses. this diverges from previous interface.
+                currPose = *inPose; // note: this has changed bootsrap to give global frame guesses. this diverges from previous interface.
             }
 
             Eigen::Vector3f trans = currPose.topRightCorner(3, 1);

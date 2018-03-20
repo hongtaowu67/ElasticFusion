@@ -297,8 +297,8 @@ void MainController::run()
                 {
                     currentPose = new Eigen::Matrix4f;
                     currentPose->setIdentity();
-                    *currentPose = forwardKinematicsOdometry->getTransformation(logReader->timestamp);
-                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier, true);
+                    *currentPose = forwardKinematicsOdometry->getTransformation(logReader->getCurrentFrame());
+                    eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier, false);
                 } else {
                     eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);
                 }

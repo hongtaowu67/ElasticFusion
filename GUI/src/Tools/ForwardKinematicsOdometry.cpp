@@ -35,13 +35,9 @@ void ForwardKinematicsOdometry::loadPoses(const std::string & filename)
     std::cout << "Loaded forward kin poses" << std::endl;
     
     for (size_t i = 0; i < poses_yaml.size(); i++) {
-        std::cout << poses_yaml[i] << std::endl;
 
         YAML::Node current_pose = poses_yaml[i];
 
-        std::cout << current_pose << std::endl;
-
-        
         float x, y, z, qx, qy, qz, qw;
 
         x = current_pose["camera_to_world"]["translation"]["x"].as<float>();
@@ -50,8 +46,8 @@ void ForwardKinematicsOdometry::loadPoses(const std::string & filename)
 
         qx = current_pose["camera_to_world"]["quaternion"]["x"].as<float>();
         qy = current_pose["camera_to_world"]["quaternion"]["y"].as<float>();
-        qz = current_pose["camera_to_world"]["quaternion"]["y"].as<float>();
-        qw = current_pose["camera_to_world"]["quaternion"]["z"].as<float>();
+        qz = current_pose["camera_to_world"]["quaternion"]["z"].as<float>();
+        qw = current_pose["camera_to_world"]["quaternion"]["w"].as<float>();
         
         Eigen::Quaternionf q(qw, qx, qy, qz);
         Eigen::Vector3f t(x, y, z);
@@ -68,10 +64,12 @@ Eigen::Matrix4f ForwardKinematicsOdometry::getTransformation(uint64_t frame_numb
 
     Eigen::Matrix4f pose4f = Eigen::Matrix4f::Identity();
 
+    std::cout << "Getting transformation for frame_number " << frame_number << std::endl;
 
     if(frame_number != 0)
     {
         Eigen::Isometry3f pose3f = camera_trajectory[frame_number];
+
 
         //Poses are stored in the file in iSAM basis, undo it
         Eigen::Matrix4f M;
@@ -80,7 +78,14 @@ Eigen::Matrix4f ForwardKinematicsOdometry::getTransformation(uint64_t frame_numb
               0,  0, 1, 0,
               0,  0, 0, 1;
 
-        pose4f = M.inverse() * pose3f * M;
+        pose4f = M.inverse() * camera_trajectory[0].inverse() * M * pose3f * M;
+
+        std::cout << "pose4f is " << pose4f << std::endl;
+
+        // if (frame_number > 10) {
+        //     exit(0);
+        // }
+
         //pose4f = pose3f;
     }
 
