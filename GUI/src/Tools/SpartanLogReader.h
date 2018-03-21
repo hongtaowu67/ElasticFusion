@@ -64,6 +64,8 @@ class SpartanLogReader : public LogReader
 
         void getBack();
 
+        int getForwardKinematicsPose();
+
         int getNumFrames();
 
         bool hasMore();

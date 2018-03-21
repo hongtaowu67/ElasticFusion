@@ -40,6 +40,7 @@ void spartanGetParams(const std::string camera_info_filename, int& pixels_width,
     
     pixels_width = camera_info_yaml["image_width"].as<int>();
     pixels_height = camera_info_yaml["image_height"].as<int>();
+
     fx = camera_info_yaml["camera_matrix"]["data"][0].as<double>();
     fy = camera_info_yaml["camera_matrix"]["data"][4].as<double>();
     cx = camera_info_yaml["camera_matrix"]["data"][2].as<double>();
@@ -89,6 +90,10 @@ void SpartanLogReader::getNext()
     getCore();
 }
 
+int SpartanLogReader::getForwardKinematicsPose() {
+    return currentFrame;
+}
+
 std::string ZeroPadNumber(int num)
 {
     std::stringstream ss;
@@ -107,10 +112,6 @@ std::string ZeroPadNumber(int num)
 
 void SpartanLogReader::getCore()
 {
-
-    std::cout << "current frame " << currentFrame << std::endl;
-    std::cout << "padded " << ZeroPadNumber(currentFrame) << std::endl;
-    std::cout << config_yaml[currentFrame]["camera_to_world"] << std::endl;
 
     // Depth 
     std::string depth_filename = file+"/"+ZeroPadNumber(currentFrame)+"_depth.png";

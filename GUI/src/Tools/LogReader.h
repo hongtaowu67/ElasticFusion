@@ -73,6 +73,8 @@ class LogReader
 
         virtual void setAuto(bool value) = 0;
 
+        int getCurrentFrame(){return currentFrame;}
+
         bool flipColors;
         int64_t timestamp;
 
