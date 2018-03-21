@@ -64,29 +64,14 @@ Eigen::Matrix4f ForwardKinematicsOdometry::getTransformation(uint64_t frame_numb
 
     Eigen::Matrix4f pose4f = Eigen::Matrix4f::Identity();
 
-    std::cout << "Getting transformation for frame_number " << frame_number << std::endl;
-
     if(frame_number != 0)
     {
         Eigen::Isometry3f pose3f = camera_trajectory[frame_number];
 
+        Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
 
-        //Poses are stored in the file in iSAM basis, undo it
-        Eigen::Matrix4f M;
-        M <<  1,  0, 0, 0,
-              0,  1, 0, 0,
-              0,  0, 1, 0,
-              0,  0, 0, 1;
+        pose4f = M * camera_trajectory[0].inverse() * M * pose3f * M;
 
-        pose4f = M.inverse() * camera_trajectory[0].inverse() * M * pose3f * M;
-
-        std::cout << "pose4f is " << pose4f << std::endl;
-
-        // if (frame_number > 10) {
-        //     exit(0);
-        // }
-
-        //pose4f = pose3f;
     }
 
     return pose4f;
