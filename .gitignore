@@ -7,3 +7,5 @@ deps/
 OpenNI2/
 Pangolin/
 *.swp
+*.freiburg
+*.ply
