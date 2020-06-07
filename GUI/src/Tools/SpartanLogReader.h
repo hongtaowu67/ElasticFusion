@@ -82,9 +82,15 @@ class SpartanLogReader : public LogReader
 
         std::stack<int> filePointers;
 
+        cv::Mat depthFilter(const cv::Mat& depth_img);
+
     private:
         void getCore();
         YAML::Node config_yaml;
+
+        int depthFilterPatch = 3; // patch size for filtering depth
+        int depthFilterThreshold = 10; // depth filter threshold
+        int depthFilterDepthThreshold = 1500; // no depth filter for depth larger than 1.5m
 };
 
 #endif /* SPARTANLOGREADER_H_ */

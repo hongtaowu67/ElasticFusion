@@ -36,6 +36,7 @@ bool isSpartanLog(std::string const& value)
 }
 
 void spartanGetParams(const std::string camera_info_filename, int& pixels_width, int& pixels_height, double& fx, double& fy, double& cx, double& cy) {
+    std::cout << "Camera info name: " << camera_info_filename << std::endl;
     YAML::Node camera_info_yaml = YAML::LoadFile(camera_info_filename);
     
     pixels_width = camera_info_yaml["image_width"].as<int>();
@@ -62,6 +63,8 @@ SpartanLogReader::SpartanLogReader(const std::string & log_folder, bool flipColo
 
     currentFrame = 0;
     numFrames = config_yaml.size();
+
+    std::cout << "Number of frames: " << numFrames << std::endl;
 
     depthReadBuffer = new unsigned char[numPixels * 2];
     imageReadBuffer = new unsigned char[numPixels * 3];
@@ -110,6 +113,39 @@ std::string ZeroPadNumber(int num)
     return ret;
 }
 
+cv::Mat SpartanLogReader::depthFilter(const cv::Mat& depth)
+{
+    cv::Mat mask_depth = cv::Mat::zeros(height, width, CV_16UC1);
+    int start = floor(depthFilterPatch/2);
+
+    int threshold = 10;
+    int depth_threshold = 1500;
+
+    for (int r = start; r < height - start; r++)
+        for (int c = start; c < width - start; c++)
+        {
+            if (depth.at<ushort>(r,c) > depth_threshold)
+            {
+                mask_depth.at<ushort>(r, c) = depth.at<ushort>(r, c);
+                continue;
+            }
+
+            int diff_patch = 0;
+            for (int i = -start; i <= start; i++)
+                for (int j = -start; j <= start; j++)
+                {
+                    int diff = abs( depth.at<ushort>(r, c) - depth.at<ushort>(r + i, c + j) );
+                    if (diff > diff_patch)
+                        diff_patch = diff;
+                }
+            
+            if ( diff_patch <= threshold )
+                mask_depth.at<ushort>(r, c) = depth.at<ushort>(r, c);   
+        }
+
+    return mask_depth;
+}
+
 void SpartanLogReader::getCore()
 {
 
@@ -117,8 +153,10 @@ void SpartanLogReader::getCore()
     std::string depth_filename = file+"/"+ZeroPadNumber(currentFrame)+"_depth.png";
     if (file_exists(depth_filename))
     {
+        cv::Mat cv_depth_unfiltered;
         cv::Mat cv_depth;
-        cv_depth = cv::imread(depth_filename, CV_16UC1);
+        cv_depth_unfiltered = cv::imread(depth_filename, CV_16UC1);
+        cv_depth = depthFilter(cv_depth_unfiltered);
         memcpy(&decompressionBufferDepth[0], cv_depth.ptr(), numPixels * 2);
     }
     else

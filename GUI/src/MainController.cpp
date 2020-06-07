@@ -46,8 +46,9 @@ MainController::MainController(int argc, char * argv[])
         Resolution::getInstance(pixels_width, pixels_height);
         Intrinsics::getInstance(fx, fy, cx, cy);
         logReader = new SpartanLogReader(logFile, Parse::get().arg(argc, argv, "-f", empty) > -1);
+
         forwardKinematicsOdometry = new ForwardKinematicsOdometry(logFile+"/pose_data.yaml");
-    } 
+    }
     else 
     {
         Resolution::getInstance(640, 480);
@@ -297,7 +298,8 @@ void MainController::run()
                 {
                     currentPose = new Eigen::Matrix4f;
                     currentPose->setIdentity();
-                    *currentPose = forwardKinematicsOdometry->getTransformation(logReader->getCurrentFrame());
+                    // *currentPose = forwardKinematicsOdometry->getTransformation(logReader->getCurrentFrame());
+                    *currentPose = forwardKinematicsOdometry->getTransformationBase(logReader->getCurrentFrame());
                     eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier, false);
                 } else {
                     eFusion->processFrame(logReader->rgb, logReader->depth, logReader->timestamp, currentPose, weightMultiplier);

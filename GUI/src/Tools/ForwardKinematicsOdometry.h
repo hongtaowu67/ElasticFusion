@@ -43,7 +43,9 @@ class ForwardKinematicsOdometry
 
         Eigen::Matrix4f getPose(uint64_t frame_number);
 
-        Eigen::Matrix4f getTransformation(uint64_t frame_number);
+        Eigen::Matrix4f getTransformation(uint64_t frame_number); // Base frame: first cam frame
+
+        Eigen::Matrix4f getTransformationBase(uint64_t frame_number); // Base frame: robot base
 
     private:
     	YAML::Node poses_yaml;

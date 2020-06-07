@@ -16,11 +16,12 @@
  *
  */
 
+#include <string>
 #include "ForwardKinematicsOdometry.h"
 
 ForwardKinematicsOdometry::ForwardKinematicsOdometry(const std::string & filename)
 {
-    loadPoses(filename);
+    loadPoses(filename);    
 }
 
 ForwardKinematicsOdometry::~ForwardKinematicsOdometry()
@@ -48,6 +49,10 @@ void ForwardKinematicsOdometry::loadPoses(const std::string & filename)
         qy = current_pose["camera_to_world"]["quaternion"]["y"].as<float>();
         qz = current_pose["camera_to_world"]["quaternion"]["z"].as<float>();
         qw = current_pose["camera_to_world"]["quaternion"]["w"].as<float>();
+
+        std::cout << "Frame number: " << i << std::endl;
+        std::cout << "x, y, z: " << x << " " << y << " " << z << std::endl;
+        std::cout << "qx, qy, qz, qw: " << qx << " " << qy << " " << qz << " " << qw << std::endl;
         
         Eigen::Quaternionf q(qw, qx, qy, qz);
         Eigen::Vector3f t(x, y, z);
@@ -71,6 +76,24 @@ Eigen::Matrix4f ForwardKinematicsOdometry::getTransformation(uint64_t frame_numb
         Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
 
         pose4f = M * camera_trajectory[0].inverse() * M * pose3f * M;
+
+    }
+
+    return pose4f;
+}
+
+Eigen::Matrix4f ForwardKinematicsOdometry::getTransformationBase(uint64_t frame_number)
+{
+
+    Eigen::Matrix4f pose4f = Eigen::Matrix4f::Identity();
+
+    if(frame_number != 0)
+    {
+        Eigen::Isometry3f pose3f = camera_trajectory[frame_number];
+
+        Eigen::Matrix4f M = Eigen::Matrix4f::Identity();
+
+        pose4f = M * pose3f * M;
 
     }
 
